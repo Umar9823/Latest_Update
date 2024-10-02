@@ -47,7 +47,6 @@ const ClassBooking = () => {
           timeSet.add(slot.time);
           schedule[day][slot.time] = {
             class: slot.class,
-            teacher: slot.teacher,
             booked: false,
           };
         });
@@ -232,7 +231,7 @@ function ScheduleTable({ timeSlots, scheduleByDay, bookedClasses }) {
                           className={isBooked ? "booked-slot" : "available-slot"}
                         >
                           {classData
-                            ? `${classData.class} (${classData.teacher})`
+                            ? `${classData.class}` // Removed the teacher information here
                             : "Nothing there"}
                         </td>
                       );
@@ -273,7 +272,7 @@ function ScheduleTable({ timeSlots, scheduleByDay, bookedClasses }) {
                           className={isBooked ? "booked-slot" : "available-slot"}
                         >
                           {classData
-                            ? `${classData.class} (${classData.teacher})`
+                            ? `${classData.class}` // Removed the teacher information here
                             : "Nothing there"}
                         </td>
                       );
