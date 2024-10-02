@@ -19,7 +19,7 @@ const SigninForm = () => {
     const navigate = useNavigate();
 
     const handleSignUpClick = () => {
-        navigate("/"); 
+        navigate("/");
     };
 
     const handleSubmit = async (e) => {
@@ -51,7 +51,7 @@ const SigninForm = () => {
                 const data = await response.json();
                 if (response.ok) {
                     toast.success('Login Successful. Welcome back!');
-                    navigate("/"); 
+                    navigate("/");
                 } else {
                     toast.error(data.message);
                 }
@@ -271,9 +271,14 @@ const SigninForm = () => {
                                 </button>
                             </div>
                         )}
-                        <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">
+                        <button
+                            type="submit"
+                            className="w-full text-white p-2 rounded"
+                            style={{ backgroundColor: isSignUp ? '#4CAF50' : '#1E90FF' }}  // Change background colors here
+                        >
                             {isSignUp ? 'Sign Up' : 'Login'}
                         </button>
+
                         <p className="text-center">
                             {isSignUp ? 'Already have an account?' : "Don't have an account?"}
                             <button
