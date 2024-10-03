@@ -103,7 +103,7 @@ const ClassBooking = () => {
     }
   
     try {
-      const response = await fetch("http://localhost:5000/api/book-class", {
+      const response = await fetch("https://paymentbackend-iysk.onrender.com/api/book-class", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +159,7 @@ const ClassBooking = () => {
     }
   
     try {
-      const response = await fetch(`http://localhost:5000/api/confirm-payment/${bookingData.bookingId}`, {
+      const response = await fetch(`https://paymentbackend-iysk.onrender.com/api/confirm-payment/${bookingData.bookingId}`, {
         method: "POST",
         body: formData,
       });
