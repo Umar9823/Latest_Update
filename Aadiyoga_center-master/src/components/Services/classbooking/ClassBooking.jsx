@@ -56,15 +56,20 @@ const ClassBooking = () => {
 
       const bookedSnapshot = await db.collection("booked-classes").get();
       bookedSnapshot.forEach((doc) => {
-        const data = doc.data();
-        const day = data.day;
-        const time = data.time;
-
-        if (schedule[day] && schedule[day][time]) {
-          schedule[day][time].booked = true;
-          booked[`${day}-${time}`] = true;
-        }
+          const data = doc.data();
+          const day = data.day;
+          const time = data.time;
+          const paymentStatus = data.paymentStatus; // Get paymentStatus
+      
+          // Only mark as booked if the payment status is confirmed
+          if (paymentStatus === "Confirmed") {
+              if (schedule[day] && schedule[day][time]) {
+                  schedule[day][time].booked = true;
+                  booked[`${day}-${time}`] = true;
+              }
+          }
       });
+      
 
       // Sort the time slots with AM first and PM later, still in order
       const sortedTimeSlots = Array.from(timeSet).sort((a, b) => {
