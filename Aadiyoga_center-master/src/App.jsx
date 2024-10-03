@@ -39,6 +39,8 @@ import "aos/dist/aos.css";
 
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./components/context/AuthContext";
+import ProtectedRoute from './components/protectedroute/ProtectedRoute'
 import Home from "./Pages/Home";
 import AboutUs from "./Pages/AboutUs";
 import ScrollTop from './components/ScrollTop/ScrollTop'
@@ -64,32 +66,29 @@ const App = () => {
     once: true,
   });
   return (
-    <Router>
-
-      <ScrollTop/>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/schedule" element={<Schedule />} />
-        <Route path="/yogaclass" element={<YogaClasses />} />
-        <Route path="/normalclass" element={< Normalcls/>} />
-        <Route path="/privateclass" element={< Privatecls/>} />
-        <Route path="/pilates" element={< Pilates/>} />
-        <Route path="/kidsyoga" element={< Kidsyoga/>} />
-        <Route path="/yogatherapy" element={< YogaTherapy/>} />
-        <Route path="/soundhealing" element={< Soundhealing/>} />
-        <Route path="/trainingcourse" element={< Trainingcourses/>} />
-        <Route path="/services" element={< Services/>} />
-        <Route path="/product" element={< Product/>} />
-        <Route path="/signup" element={<AuthForm />} />
-        <Route path="/signin" element={<SigninForm />} />
-
-
-        {/* <Route path="/addDataForm" element={< ScheduleForm/>} /> */}
-
-        {/* Add more routes as needed */}
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <ScrollTop />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/schedule" element={<Schedule />} />
+          <Route path="/yogaclass" element={<YogaClasses />} />
+          <Route path="/privateclass" element={<Privatecls />} />
+          <Route path="/pilates" element={<Pilates />} />
+          <Route path="/kidsyoga" element={<Kidsyoga />} />
+          <Route path="/yogatherapy" element={<YogaTherapy />} />
+          <Route path="/soundhealing" element={<Soundhealing />} />
+          <Route path="/trainingcourse" element={<Trainingcourses />} />
+          <Route path="/services" element={<Services />} />
+          <Route path="/product" element={<Product />} />
+          <Route path="/signup" element={<AuthForm />} />
+          <Route path="/signin" element={<SigninForm />} />
+          {/* Conditionally render Normalcls route based on authentication */}
+          <Route path="/normalclass" element={<ProtectedRoute element={<Normalcls />} />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 };
 
