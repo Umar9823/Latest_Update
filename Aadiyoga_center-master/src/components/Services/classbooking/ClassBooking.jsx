@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { TailSpin } from 'react-loader-spinner';
 import firebase from "firebase/compat/app";
 import "firebase/compat/firestore";
 import "firebase/compat/storage";
@@ -19,6 +20,7 @@ const ClassBooking = () => {
   const [timeSlots, setTimeSlots] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Loading state
 
   useEffect(() => {
     fetchYogaSchedule();
@@ -86,6 +88,7 @@ const ClassBooking = () => {
   };
 
 
+ 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -96,12 +99,14 @@ const ClassBooking = () => {
     const day = form.day.value;
     const time = form.time.value;
     const className = form.className.value;
-  
+
     if (!name || !email || !phone || !address || !day || !time || !className) {
       alert("Please fill all fields before submitting.");
       return;
     }
-  
+
+    setIsLoading(true); // Start loading
+
     try {
       const response = await fetch("https://paymentbackend-iysk.onrender.com/api/book-class", {
         method: "POST",
@@ -118,7 +123,7 @@ const ClassBooking = () => {
           className,
         }),
       });
-  
+
       const data = await response.json();
       if (response.status === 200) {
         // Store booking data and bookingId in state for later use
@@ -140,30 +145,34 @@ const ClassBooking = () => {
     } catch (error) {
       console.error("Error booking class:", error);
       alert("An error occurred while booking the class. Please try again.");
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
-  
+
   const handlePaymentConfirmation = async () => {
     const paymentReceipt = document.getElementById("paymentReceipt").files[0];
     if (!paymentReceipt) {
       alert("Please upload the payment receipt.");
       return;
     }
-  
+
     const formData = new FormData();
     formData.append("paymentReceipt", paymentReceipt);
-  
+
     if (!bookingData || !bookingData.bookingId) {
       alert("No booking found. Please book a class before confirming payment.");
       return;
     }
-  
+
+    setIsLoading(true); // Start loading
+
     try {
       const response = await fetch(`https://paymentbackend-iysk.onrender.com/api/confirm-payment/${bookingData.bookingId}`, {
         method: "POST",
         body: formData,
       });
-  
+
       const data = await response.json();
       if (response.status === 200) {
         alert(data.message);
@@ -174,6 +183,8 @@ const ClassBooking = () => {
     } catch (error) {
       console.error("Error confirming payment:", error);
       alert("An error occurred while confirming the payment. Please try again.");
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
   
@@ -189,11 +200,17 @@ const ClassBooking = () => {
           </button>
         </div>
 
-        <ScheduleTable
-          timeSlots={timeSlots}
-          scheduleByDay={scheduleByDay}
-          bookedClasses={bookedClasses}
-        />
+        {isLoading ? (
+          <div className="loading-spinner">
+            <TailSpin color="#00BFFF" height={80} width={80} />
+          </div>
+        ) : (
+          <ScheduleTable
+            timeSlots={timeSlots}
+            scheduleByDay={scheduleByDay}
+            bookedClasses={bookedClasses}
+          />
+        )}
 
         {showModal && (
           <BookingModal
