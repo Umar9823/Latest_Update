@@ -86,7 +86,7 @@ const ClassBooking = () => {
   };
 
 
-  const handleBookingSubmit = (e) => {
+  const handleBookingSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
     const name = form.name.value;
@@ -96,16 +96,53 @@ const ClassBooking = () => {
     const day = form.day.value;
     const time = form.time.value;
     const className = form.className.value;
-
+  
     if (!name || !email || !phone || !address || !day || !time || !className) {
       alert("Please fill all fields before submitting.");
       return;
     }
-
-    setBookingData({ name, email, phone, address, day, time, className });
-    setShowQRCode(true);
+  
+    try {
+      const response = await fetch("http://localhost:5000/api/book-class", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          address,
+          day,
+          time,
+          className,
+        }),
+      });
+  
+      const data = await response.json();
+      if (response.status === 200) {
+        // Store booking data and bookingId in state for later use
+        setBookingData({
+          name,
+          email,
+          phone,
+          address,
+          day,
+          time,
+          className,
+          bookingId: data.bookingId, // Save bookingId from the server
+        });
+        alert("Class booked successfully, please proceed with payment.");
+        setShowQRCode(true); // Show QR code for payment after booking
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error booking class:", error);
+      alert("An error occurred while booking the class. Please try again.");
+    }
   };
-
+  
   const handlePaymentConfirmation = async () => {
     const paymentReceipt = document.getElementById("paymentReceipt").files[0];
     if (!paymentReceipt) {
@@ -113,28 +150,33 @@ const ClassBooking = () => {
       return;
     }
   
+    const formData = new FormData();
+    formData.append("paymentReceipt", paymentReceipt);
+  
+    if (!bookingData || !bookingData.bookingId) {
+      alert("No booking found. Please book a class before confirming payment.");
+      return;
+    }
+  
     try {
-      // Upload the payment receipt to Firebase Storage
-      const storageRef = storage.ref("paymentReceipts/" + paymentReceipt.name);
-      await storageRef.put(paymentReceipt);
-  
-      // Get the download URL of the uploaded payment receipt
-      const receiptURL = await storageRef.getDownloadURL();
-  
-      // Store the booking data along with the payment receipt and timestamp
-      const bookingRef = db.collection("booked-classes").doc();
-      await bookingRef.set({
-        ...bookingData,
-        paymentReceipt: receiptURL,
-        bookingTime: firebase.firestore.FieldValue.serverTimestamp(), // Adding timestamp
+      const response = await fetch(`http://localhost:5000/api/confirm-payment/${bookingData.bookingId}`, {
+        method: "POST",
+        body: formData,
       });
   
-      alert("Payment confirmed and class booked successfully!");
-      window.location.reload();
+      const data = await response.json();
+      if (response.status === 200) {
+        alert(data.message);
+        window.location.reload(); // Reload the page to reflect changes
+      } else {
+        alert(data.message);
+      }
     } catch (error) {
       console.error("Error confirming payment:", error);
+      alert("An error occurred while confirming the payment. Please try again.");
     }
   };
+  
   
   return (
     <div className="px-4 py-8 max-w-7xl mx-auto mt-[120px]">
@@ -230,8 +272,9 @@ function ScheduleTable({ timeSlots, scheduleByDay, bookedClasses }) {
                           key={`${day}-${time}`}
                           className={isBooked ? "booked-slot" : "available-slot"}
                         >
+                          {/* Removed teacher name from display */}
                           {classData
-                            ? `${classData.class}` // Removed the teacher information here
+                            ? classData.class
                             : "Nothing there"}
                         </td>
                       );
@@ -271,8 +314,9 @@ function ScheduleTable({ timeSlots, scheduleByDay, bookedClasses }) {
                           key={`${day}-${time}`}
                           className={isBooked ? "booked-slot" : "available-slot"}
                         >
+                          {/* Removed teacher name from display */}
                           {classData
-                            ? `${classData.class}` // Removed the teacher information here
+                            ? classData.class
                             : "Nothing there"}
                         </td>
                       );
@@ -386,7 +430,9 @@ function BookingModal({ onClose, handleSubmit, showQRCode, handlePaymentConfirma
           <div id="qrcode-container">
             <h2>Complete Payment</h2>
             <p>Scan the QR code below to complete the payment:</p>
-            <img id="qrcode" src="../QRCode.jpeg" alt="UPI QR Code" />
+            <div className="qrimg">
+            <img id="qrcode" src="/src/assets/img/qrcode/QRCode.png" alt="UPI QR Code" />
+            </div>
             <label htmlFor="paymentReceipt">Upload Payment Receipt:</label>
             <input type="file" id="paymentReceipt" name="paymentReceipt" accept="image/*" required />
             <button className="paymentBtn" onClick={handlePaymentConfirmation}>Confirm Payment</button>
